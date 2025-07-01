@@ -1,0 +1,361 @@
+{
+  "instances": [
+    {
+      "endpoints": {
+        "sse": "https://glama.ai/mcp/instances/a5pjv7m4x2/sse?token=8a94c902-7f4c-4cae-9292-0ca21bbfee20"
+      },
+      "id": "a5pjv7m4x2",
+      "mcpServer": {
+        "attributes": [],
+        "description": "A Model Context Protocol (MCP) server for advanced code analysis and editing with semantic search capabilities, enabling AI assistants to perform complex code operations through a standardized interface.",
+        "environmentVariablesJsonSchema": {
+          "properties": {},
+          "type": "object",
+          "required": []
+        },
+        "id": "ceug9mr0e0",
+        "name": "Moatless MCP Server",
+        "namespace": "TwT23333",
+        "repository": {
+          "url": "https://github.com/TwT23333/mcp"
+        },
+        "slug": "mcp",
+        "spdxLicense": null,
+        "tools": [
+          {
+            "description": "Read file contents with optional line range. Supports text files up to 10MB.",
+            "name": "read_file",
+            "inputSchema": {
+              "properties": {
+                "end_line": {
+                  "description": "End line number (1-based, optional)",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "file_path": {
+                  "description": "Path to the file to read (relative to workspace root)",
+                  "type": "string"
+                },
+                "start_line": {
+                  "description": "Start line number (1-based, optional)",
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "required": ["file_path"],
+              "type": "object"
+            }
+          },
+          {
+            "description": "Write content to a file. Creates parent directories if needed.",
+            "name": "write_file",
+            "inputSchema": {
+              "properties": {
+                "content": {
+                  "description": "Content to write to the file",
+                  "type": "string"
+                },
+                "file_path": {
+                  "description": "Path to the file to write (relative to workspace root)",
+                  "type": "string"
+                }
+              },
+              "required": ["file_path", "content"],
+              "type": "object"
+            }
+          },
+          {
+            "description": "List files and directories in the workspace with filtering options.",
+            "name": "list_files",
+            "inputSchema": {
+              "properties": {
+                "directory": {
+                  "default": "",
+                  "description": "Directory path to list (relative to workspace root, default: root)",
+                  "type": "string"
+                },
+                "max_results": {
+                  "default": 100,
+                  "description": "Maximum number of files to return",
+                  "maximum": 1000,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "recursive": {
+                  "default": false,
+                  "description": "Whether to list files recursively",
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            }
+          },
+          {
+            "description": "Replace occurrences of a string in a file with validation.",
+            "name": "string_replace",
+            "inputSchema": {
+              "properties": {
+                "file_path": {
+                  "description": "Path to the file to modify",
+                  "type": "string"
+                },
+                "new_str": {
+                  "description": "String to replace with",
+                  "type": "string"
+                },
+                "occurrence": {
+                  "default": 1,
+                  "description": "Which occurrence to replace (1-based, 0 for all occurrences)",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "old_str": {
+                  "description": "String to find and replace",
+                  "type": "string"
+                }
+              },
+              "required": ["file_path", "old_str", "new_str"],
+              "type": "object"
+            }
+          },
+          {
+            "description": "Search for text patterns in files using regular expressions.",
+            "name": "grep",
+            "inputSchema": {
+              "properties": {
+                "file_pattern": {
+                  "default": "*",
+                  "description": "File glob pattern to limit search (default: *)",
+                  "type": "string"
+                },
+                "max_results": {
+                  "default": 100,
+                  "description": "Maximum number of results to return",
+                  "maximum": 1000,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "pattern": {
+                  "description": "Regular expression pattern to search for",
+                  "type": "string"
+                }
+              },
+              "required": ["pattern"],
+              "type": "object"
+            }
+          },
+          {
+            "description": "Find files by name pattern using glob syntax.",
+            "name": "find_files",
+            "inputSchema": {
+              "properties": {
+                "max_results": {
+                  "default": 100,
+                  "description": "Maximum number of results to return",
+                  "maximum": 1000,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "pattern": {
+                  "description": "Glob pattern to match file names (e.g., '*.py', '*test*', 'src/**/*.java')",
+                  "type": "string"
+                }
+              },
+              "required": ["pattern"],
+              "type": "object"
+            }
+          },
+          {
+            "description": "Get information about the current workspace (path, git status, etc.)",
+            "name": "workspace_info",
+            "inputSchema": {
+              "properties": {},
+              "type": "object"
+            }
+          },
+          {
+            "description": "Find class definitions by name",
+            "name": "find_class",
+            "inputSchema": {
+              "properties": {
+                "class_name": {
+                  "description": "Name of the class to find",
+                  "type": "string"
+                },
+                "file_pattern": {
+                  "description": "Optional file pattern to limit search",
+                  "type": "string"
+                }
+              },
+              "required": ["class_name"],
+              "type": "object"
+            }
+          },
+          {
+            "description": "Find function definitions by name",
+            "name": "find_function",
+            "inputSchema": {
+              "properties": {
+                "file_pattern": {
+                  "description": "Optional file pattern to limit search",
+                  "type": "string"
+                },
+                "function_name": {
+                  "description": "Name of the function to find",
+                  "type": "string"
+                }
+              },
+              "required": ["function_name"],
+              "type": "object"
+            }
+          },
+          {
+            "description": "View specific code sections with context",
+            "name": "view_code",
+            "inputSchema": {
+              "properties": {
+                "end_line": {
+                  "description": "Ending line number (1-indexed)",
+                  "type": "integer"
+                },
+                "file_path": {
+                  "description": "Path to the file to view",
+                  "type": "string"
+                },
+                "span_ids": {
+                  "description": "List of span IDs to view (class names, function names, etc.)",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "start_line": {
+                  "description": "Starting line number (1-indexed)",
+                  "type": "integer"
+                }
+              },
+              "required": ["file_path"],
+              "type": "object"
+            }
+          },
+          {
+            "description": "Search for code using natural language descriptions with vector embeddings",
+            "name": "semantic_search",
+            "inputSchema": {
+              "properties": {
+                "api_key": {
+                  "description": "Jina AI API key for embeddings (can also be set via JINA_API_KEY env var)",
+                  "type": "string"
+                },
+                "filter_type": {
+                  "description": "Filter results by code chunk type",
+                  "enum": [
+                    "class",
+                    "function",
+                    "method",
+                    "class_header",
+                    "context"
+                  ],
+                  "type": "string"
+                },
+                "max_results": {
+                  "default": 10,
+                  "description": "Maximum number of results to return (default: 10)",
+                  "type": "integer"
+                },
+                "query": {
+                  "description": "Natural language description of what to find",
+                  "type": "string"
+                }
+              },
+              "required": ["query"],
+              "type": "object"
+            }
+          },
+          {
+            "description": "Run tests using detected testing frameworks (pytest, jest, maven, etc.)",
+            "name": "run_tests",
+            "inputSchema": {
+              "properties": {
+                "args": {
+                  "description": "Additional arguments to pass to the test runner",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "detect_only": {
+                  "default": false,
+                  "description": "Only detect available frameworks without running tests",
+                  "type": "boolean"
+                },
+                "framework": {
+                  "description": "Testing framework to use (auto-detected if not specified)",
+                  "type": "string"
+                },
+                "test_path": {
+                  "description": "Specific test file or directory to run",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          {
+            "description": "Build a vector index for semantic code search using tree-sitter and Jina embeddings",
+            "name": "build_vector_index",
+            "inputSchema": {
+              "properties": {
+                "api_key": {
+                  "description": "Jina AI API key for embeddings (can also be set via JINA_API_KEY env var)",
+                  "type": "string"
+                },
+                "file_patterns": {
+                  "description": "Optional list of glob patterns to filter files (e.g., ['**/*.py', '**/*.js'])",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "force_rebuild": {
+                  "default": false,
+                  "description": "Force rebuild even if index already exists",
+                  "type": "boolean"
+                },
+                "model": {
+                  "default": "jina-embeddings-v3",
+                  "description": "Jina embedding model to use",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          {
+            "description": "Check the status of the vector index for semantic search",
+            "name": "vector_index_status",
+            "inputSchema": {
+              "properties": {},
+              "type": "object"
+            }
+          },
+          {
+            "description": "Clear the vector index and delete all index files",
+            "name": "clear_vector_index",
+            "inputSchema": {
+              "properties": {
+                "confirm": {
+                  "default": false,
+                  "description": "Confirm that you want to delete the vector index",
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "url": "https://glama.ai/mcp/servers/ceug9mr0e0"
+      }
+    }
+  ]
+}

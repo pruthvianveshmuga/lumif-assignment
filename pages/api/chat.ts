@@ -1,23 +1,31 @@
 import { CoreMessage, experimental_createMCPClient, streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { z } from "zod";
 import { getSession, updateSession } from "../../lib/session";
-import { findBestMCPServer } from "../../lib/glama";
-import { Server } from "../../lib/glama-types";
+import { recommend_mcp_tool } from "@/lib/tools/recommend_mcp_tool";
 
 export const runtime = "edge";
 
-const SESSION_ID = "user-session-poc"; // Simple session identifier for POC
+export const SESSION_ID = "user-session-poc"; // Simple session identifier for POC
 
 async function handleConfirmation(messages: CoreMessage[], userSession: any) {
   const confirmedServer = userSession.pendingRecommendation;
   updateSession(SESSION_ID, {
     boundServer: confirmedServer,
-    pendingRecommendation: null,
+    pendingRecommendations: null,
   });
+
+  // TODO: Add boundServer.endpoints.sse url below
+  const mcpClient = await experimental_createMCPClient({
+    transport: {
+      type: "sse",
+      url: "https://glama.ai/mcp/instances/a5pjv7m4x2/sse?token=8a94c902-7f4c-4cae-9292-0ca21bbfee20",
+    },
+  });
+  const mootlessToolsSet = await mcpClient.tools();
 
   return streamText({
     model: openai("gpt-4.1-nano"),
+    tools: { recommend_mcp_tool, ...mootlessToolsSet },
     messages: [
       ...messages,
       {
@@ -42,45 +50,11 @@ async function handleBoundSession(messages: CoreMessage[], userSession: any) {
 }
 
 async function handleRecommendation(messages: CoreMessage[]) {
-  const clientTwo = await experimental_createMCPClient({
-    transport: {
-      type: "sse",
-      url: "https://glama.ai/mcp/instances/a5pjv7m4x2/sse?token=8a94c902-7f4c-4cae-9292-0ca21bbfee20",
-    },
-  });
-  const toolSetTwo = await clientTwo.tools();
-
   return streamText({
     model: openai("gpt-4.1-nano"),
     messages,
     tools: {
-      ...toolSetTwo,
-      recommend_mcp: {
-        description:
-          "Recommends the best MCP server based on the user query by fetching and ranking MCP servers.",
-        parameters: z.object({
-          query: z
-            .string()
-            .describe("The user query to analyze for tool matching."),
-        }),
-        execute: async ({ query }) => {
-          console.log(`Recommending MCP for query: ${query}`);
-          const bestServer = await findBestMCPServer(query);
-
-          if (bestServer) {
-            updateSession(SESSION_ID, {
-              pendingRecommendation: bestServer,
-            });
-            return `I recommend MCP Server \`${
-              bestServer.name
-            }\` which supports: ${bestServer.tools
-              .map((t) => t.name)
-              .join(", ")}. Would you like to proceed with this?`;
-          }
-
-          return "I couldn't find a suitable MCP server for your request.";
-        },
-      },
+      recommend_mcp_tool,
     },
   });
 }
@@ -94,7 +68,7 @@ export default async function POST(req: Request) {
   const userSession = getSession(SESSION_ID);
 
   if (
-    userSession?.pendingRecommendation &&
+    userSession?.pendingRecommendations &&
     lastMessageContent.toLowerCase().includes("yes")
   ) {
     const result = await handleConfirmation(messages, userSession);

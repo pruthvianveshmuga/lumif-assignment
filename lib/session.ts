@@ -1,7 +1,7 @@
 import { Server } from "./glama-types";
 
 export interface SessionState {
-  pendingRecommendation?: Server | null;
+  pendingRecommendations?: Server | null;
   boundServer?: Server | null;
   [key: string]: any;
 }
