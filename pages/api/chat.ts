@@ -2,19 +2,26 @@ import { CoreMessage, experimental_createMCPClient, streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { getSession, updateSession } from "../../lib/session";
 import { recommend_mcp_tool } from "@/lib/tools/recommend_mcp_tool";
+import { Instance } from "@/lib/glama-types";
 
 export const runtime = "edge";
 
 export const SESSION_ID = "user-session-poc"; // Simple session identifier for POC
 
 async function handleConfirmation(messages: CoreMessage[], userSession: any) {
-  const confirmedServer = userSession.pendingRecommendation;
-  updateSession(SESSION_ID, {
-    boundServer: confirmedServer,
-    pendingRecommendations: null,
-  });
+  // const mcpClients = await Promise.all(
+  //   userSession.recommendedMCPs.flatMap(async (mcp: Instance) => {
+  //     const mcpClient = await experimental_createMCPClient({
+  //       transport: {
+  //         type: "sse",
+  //         url: mcp.endpoints.sse,
+  //       },
+  //     });
+  //     const toolsSet = await mcpClient.tools();
+  //     return toolsSet;
+  //   })
+  // );
 
-  // TODO: Add boundServer.endpoints.sse url below
   const mcpClient = await experimental_createMCPClient({
     transport: {
       type: "sse",
@@ -25,14 +32,16 @@ async function handleConfirmation(messages: CoreMessage[], userSession: any) {
 
   return streamText({
     model: openai("gpt-4.1-nano"),
-    tools: { recommend_mcp_tool, ...mootlessToolsSet },
-    messages: [
-      ...messages,
-      {
-        role: "assistant",
-        content: `Great! I've bound your session to ${confirmedServer.name}. Future requests will use this context.`,
-      },
-    ],
+    // @ts-ignore
+    tools: { ...mootlessToolsSet },
+    messages,
+    // messages: [
+    //   ...messages,
+    //   {
+    //     role: "assistant",
+    //     content: `Great! I've bound your session to ${confirmedServer.name}. Future requests will use this context.`,
+    //   },
+    // ],
   });
 }
 
@@ -67,18 +76,15 @@ export default async function POST(req: Request) {
     typeof lastMessage.content === "string" ? lastMessage.content : "";
   const userSession = getSession(SESSION_ID);
 
-  if (
-    userSession?.pendingRecommendations &&
-    lastMessageContent.toLowerCase().includes("yes")
-  ) {
+  if (userSession?.recommendedMCPs) {
     const result = await handleConfirmation(messages, userSession);
     return result.toDataStreamResponse();
   }
 
-  if (userSession?.boundServer) {
-    const result = await handleBoundSession(messages, userSession);
-    return result.toDataStreamResponse();
-  }
+  // if (userSession?.boundServer) {
+  //   const result = await handleBoundSession(messages, userSession);
+  //   return result.toDataStreamResponse();
+  // }
 
   const result = await handleRecommendation(messages);
   return result.toDataStreamResponse();

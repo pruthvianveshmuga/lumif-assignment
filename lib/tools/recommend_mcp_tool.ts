@@ -20,13 +20,13 @@ export const recommend_mcp_tool = {
 
     if (recommendedMCPs.length > 0) {
       updateSession(SESSION_ID, {
-        pendingRecommendations: recommendedMCPs,
+        recommendedMCPs,
       });
-      return `I recommend MCP Servers \`${recommendedMCPs
+      return `The following MCP Servers are enabled: \`${recommendedMCPs
         .map((instance) => instance.mcpServer.name)
         .join(", ")}\` which supports: ${recommendedMCPs
         .flatMap((instance) => instance.mcpServer.tools.map((t) => t.name))
-        .join(", ")}. Would you like to proceed with this?`;
+        .join(", ")}.`;
     }
 
     return "I couldn't find a suitable MCP server for your request.";

@@ -1,9 +1,7 @@
-import { Server } from "./glama-types";
+import { Instance } from "./glama-types";
 
 export interface SessionState {
-  pendingRecommendations?: Server | null;
-  boundServer?: Server | null;
-  [key: string]: any;
+  recommendedMCPs?: Instance[];
 }
 
 const sessionStore = new Map<string, SessionState>();
