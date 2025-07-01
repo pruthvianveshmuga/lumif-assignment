@@ -1,6 +1,6 @@
 import { CoreMessage, experimental_createMCPClient, streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { getSession, updateSession } from "../../lib/session";
+import { getSession, SessionState, updateSession } from "../../lib/session";
 import { recommend_mcp_tool } from "@/lib/tools/recommend_mcp_tool";
 import { Instance } from "@/lib/glama-types";
 
@@ -8,32 +8,35 @@ export const runtime = "edge";
 
 export const SESSION_ID = "user-session-poc"; // Simple session identifier for POC
 
-async function handleConfirmation(messages: CoreMessage[], userSession: any) {
-  // const mcpClients = await Promise.all(
-  //   userSession.recommendedMCPs.flatMap(async (mcp: Instance) => {
-  //     const mcpClient = await experimental_createMCPClient({
-  //       transport: {
-  //         type: "sse",
-  //         url: mcp.endpoints.sse,
-  //       },
-  //     });
-  //     const toolsSet = await mcpClient.tools();
-  //     return toolsSet;
-  //   })
-  // );
-
-  const mcpClient = await experimental_createMCPClient({
-    transport: {
-      type: "sse",
-      url: "https://glama.ai/mcp/instances/a5pjv7m4x2/sse?token=8a94c902-7f4c-4cae-9292-0ca21bbfee20",
-    },
-  });
-  const mootlessToolsSet = await mcpClient.tools();
+async function handleConfirmation(
+  messages: CoreMessage[],
+  userSession: SessionState
+) {
+  const mcpClients = await Promise.all(
+    userSession.recommendedMCPs!.map((instance: Instance) => {
+      return experimental_createMCPClient({
+        transport: {
+          type: "sse",
+          url: instance.endpoints.sse,
+        },
+      });
+    })
+  );
+  const toolsSet = await Promise.all(
+    mcpClients.map(async (mcpClient) => {
+      try {
+        const x = await mcpClient.tools();
+        return x;
+      } catch (error) {
+        debugger;
+      }
+    })
+  );
 
   return streamText({
     model: openai("gpt-4.1-nano"),
     // @ts-ignore
-    tools: { ...mootlessToolsSet },
+    tools: { ...Object.assign({}, ...toolsSet) },
     messages,
     // messages: [
     //   ...messages,
@@ -77,7 +80,7 @@ export default async function POST(req: Request) {
   const userSession = getSession(SESSION_ID);
 
   if (userSession?.recommendedMCPs) {
-    const result = await handleConfirmation(messages, userSession);
+    const result = await handleConfirmation(messages, userSession!);
     return result.toDataStreamResponse();
   }
 
