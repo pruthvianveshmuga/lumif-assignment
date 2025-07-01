@@ -12,39 +12,22 @@ async function handleConfirmation(
   messages: CoreMessage[],
   userSession: SessionState
 ) {
-  const mcpClients = await Promise.all(
-    userSession.recommendedMCPs!.map((instance: Instance) => {
-      return experimental_createMCPClient({
+  const toolsSet = await Promise.all(
+    userSession.recommendedMCPs!.map(async (instance: Instance) => {
+      const mcpClient = await experimental_createMCPClient({
         transport: {
           type: "sse",
           url: instance.endpoints.sse,
         },
       });
-    })
-  );
-  const toolsSet = await Promise.all(
-    mcpClients.map(async (mcpClient) => {
-      try {
-        const x = await mcpClient.tools();
-        return x;
-      } catch (error) {
-        debugger;
-      }
+      return await mcpClient.tools();
     })
   );
 
   return streamText({
     model: openai("gpt-4.1-nano"),
-    // @ts-ignore
     tools: { ...Object.assign({}, ...toolsSet) },
     messages,
-    // messages: [
-    //   ...messages,
-    //   {
-    //     role: "assistant",
-    //     content: `Great! I've bound your session to ${confirmedServer.name}. Future requests will use this context.`,
-    //   },
-    // ],
   });
 }
 
