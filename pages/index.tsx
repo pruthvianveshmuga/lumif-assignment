@@ -29,7 +29,7 @@ export default function Chat() {
             if (toolInvocation.state === "result") {
               return (
                 <span key={toolInvocation.toolCallId}>
-                  {toolInvocation.result}
+                  {JSON.stringify(toolInvocation.result)}
                 </span>
               );
             }
