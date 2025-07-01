@@ -37,7 +37,7 @@ export default async function POST(req: Request) {
         ...messages,
         {
           role: "assistant",
-          content: `Great! I've bound your session to ${confirmedServer.id}. Future requests will use this context.`,
+          content: `Great! I've bound your session to ${confirmedServer.name}. Future requests will use this context.`,
         },
       ],
     });
@@ -52,7 +52,7 @@ export default async function POST(req: Request) {
         ...messages,
         {
           role: "assistant",
-          content: `Your session is bound to ${userSession.boundServer.id}. I am ready for your next command.`,
+          content: `Your session is bound to ${userSession.boundServer.name}. I am ready for your next command.`,
         },
       ],
     });
@@ -91,12 +91,10 @@ export default async function POST(req: Request) {
                 pendingRecommendation: bestServer,
               });
               return `I recommend MCP Server \`${
-                bestServer.id
+                bestServer.name
               }\` which supports: ${bestServer.tools
                 .map((t) => t.name)
-                .join(", ")}. Location: ${
-                bestServer.namespace
-              }. Would you like to proceed with this?`;
+                .join(", ")}. Would you like to proceed with this?`;
             }
 
             return "I couldn't find a suitable MCP server for your request.";
