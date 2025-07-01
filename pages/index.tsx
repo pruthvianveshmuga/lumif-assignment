@@ -1,16 +1,41 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
+import type { Message } from "ai";
 
 export default function Chat() {
   const { messages, input, handleInputChange, handleSubmit } = useChat();
 
   return (
     <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
-      {messages.map((m) => (
+      {messages.map((m: Message) => (
         <div key={m.id} className="whitespace-pre-wrap">
           <strong>{m.role === "user" ? "User: " : "AI: "}</strong>
-          {m.content}
+
+          {m.content ? <span>{m.content}</span> : null}
+
+          {m.toolInvocations?.map((toolInvocation) => {
+            if (
+              toolInvocation.state === "call" ||
+              toolInvocation.state === "partial-call"
+            ) {
+              return (
+                <span key={toolInvocation.toolCallId}>
+                  {`Calling tool "${toolInvocation.toolName}"...`}
+                </span>
+              );
+            }
+
+            if (toolInvocation.state === "result") {
+              return (
+                <span key={toolInvocation.toolCallId}>
+                  {toolInvocation.result}
+                </span>
+              );
+            }
+
+            return null;
+          })}
         </div>
       ))}
 
