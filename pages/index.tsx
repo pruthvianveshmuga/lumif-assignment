@@ -1,5 +1,5 @@
 "use client";
-
+// TODO: improve UI quickly if possible
 import { useChat } from "@ai-sdk/react";
 import type { Message } from "ai";
 
