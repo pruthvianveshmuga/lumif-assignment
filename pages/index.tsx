@@ -1,5 +1,5 @@
 "use client";
-// TODO: improve UI quickly if possible
+
 import { useChat } from "@ai-sdk/react";
 import type { Message } from "ai";
 
@@ -21,7 +21,10 @@ export default function Chat() {
               toolInvocation.state === "partial-call"
             ) {
               return (
-                <span key={toolInvocation.toolCallId}>
+                <span
+                  key={toolInvocation.toolCallId}
+                  className="text-gray-500 italic"
+                >
                   {`Calling tool "${toolInvocation.toolName}"...`}
                 </span>
               );
@@ -29,8 +32,11 @@ export default function Chat() {
 
             if (toolInvocation.state === "result") {
               return (
-                <span key={toolInvocation.toolCallId}>
-                  {JSON.stringify(toolInvocation.result)}
+                <span
+                  key={toolInvocation.toolCallId}
+                  className="bg-gray-200 p-2 rounded-md block my-2"
+                >
+                  {JSON.stringify(toolInvocation.result, null, 2)}
                 </span>
               );
             }

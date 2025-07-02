@@ -19,7 +19,6 @@ const mcpSummary = (glamaResponse as unknown as GlamaResponse).instances.map(
 
 export async function findBestMCPs(query: string): Promise<Instance[]> {
   try {
-    // TODO: call "https://glama.ai/api/mcp/v1/instances" and get glamaResponse
     const allInstances = (glamaResponse as unknown as GlamaResponse).instances;
     const { object } = await generateObject({
       model: openai("gpt-4o"),
