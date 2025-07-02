@@ -15,7 +15,7 @@ const mcpSummary = (glamaResponse as unknown as GlamaResponse).instances.map(
   })
 );
 
-const description = `This Tool Recommends from the below list of MCP servers if relevant to the user query:
+const description = `This Tool Recommends relevant MCP Servers from the below list:
 
 ${JSON.stringify(mcpSummary)}
 `;

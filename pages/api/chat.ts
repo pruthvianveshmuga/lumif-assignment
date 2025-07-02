@@ -28,7 +28,7 @@ const handleUserMessage = async (
     tools = Object.assign(tools, ...toolsSet);
   }
   return streamText({
-    model: openai("gpt-4.1-nano"),
+    model: openai("gpt-4o"),
     messages,
     tools,
   });

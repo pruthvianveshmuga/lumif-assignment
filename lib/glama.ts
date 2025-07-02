@@ -30,8 +30,7 @@ export async function findBestMCPs(query: string): Promise<Instance[]> {
           })
         ),
       }),
-      prompt: `Return relevant MCP servers for the query: ${query}
-    from the following list of MCP servers:
+      prompt: `Return relevant MCP servers to resolve the user query: "${query}" from the following list of MCP servers:
     ${JSON.stringify(mcpSummary)}
     `,
     });
