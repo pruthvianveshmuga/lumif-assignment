@@ -4,7 +4,8 @@ import { useChat } from "@ai-sdk/react";
 import type { Message } from "ai";
 
 export default function Chat() {
-  const { messages, input, handleInputChange, handleSubmit } = useChat();
+  const { messages, input, handleInputChange, handleSubmit, error, reload } =
+    useChat();
 
   return (
     <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
@@ -39,12 +40,28 @@ export default function Chat() {
         </div>
       ))}
 
+      {error && (
+        <div className="border-t-2 border-gray-300 pt-4 mt-4">
+          <div className="text-red-500">
+            <strong>Error: </strong>
+            {"An error occurred. Please try again."}
+          </div>
+          <button
+            onClick={() => reload()}
+            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit}>
         <input
           className="fixed bottom-0 w-full max-w-md p-2 mb-8 border border-gray-300 rounded shadow-xl"
           value={input}
           placeholder="Say something..."
           onChange={handleInputChange}
+          disabled={error != null}
         />
       </form>
     </div>

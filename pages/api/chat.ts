@@ -34,11 +34,18 @@ const handleUserMessage = async (
   });
 };
 
-// TODO: add tool error handling
 export default async function POST(req: Request) {
-  const { messages }: { messages: CoreMessage[] } = await req.json();
-  const userSession = getSession(SESSION_ID);
+  try {
+    const { messages }: { messages: CoreMessage[] } = await req.json();
+    const userSession = getSession(SESSION_ID);
 
-  const result = await handleUserMessage(messages, userSession!);
-  return result.toDataStreamResponse();
+    const result = await handleUserMessage(messages, userSession!);
+    return result.toDataStreamResponse();
+  } catch (error) {
+    console.error("An unexpected error occurred:", error);
+    if (error instanceof Error && error.name === "TimeoutError") {
+      return new Response("The request timed out.", { status: 408 });
+    }
+    return new Response("An unexpected error occurred.", { status: 500 });
+  }
 }

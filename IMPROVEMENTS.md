@@ -1,3 +1,3 @@
 - Maintain a user session store in the backend to save previous messages of the user. Send only the latest AI message to the frontend instead of all messages. Similarly implement a messsages state in the frontend and append the new messages in that state. Only send the latest user message from the frontend when the user sends a message instead of all messages.
 - User session is currently a local map and the key is hardcoded (to limit scope to POC). Instead track the user session id with cookies.
-- Instead of the user asking to use a tool twice, it should both attach the MCP as well as respond with acknowledgement
+- Handle Errors gracefully in UI for status codes 5xx and 4xx
