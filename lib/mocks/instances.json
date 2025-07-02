@@ -1,11 +1,361 @@
-// TODO: test with more MCP servers
 {
   "instances": [
     {
       "endpoints": {
-        "sse": "https://glama.ai/mcp/instances/a5pjv7m4x2/sse?token=8a94c902-7f4c-4cae-9292-0ca21bbfee20"
+        "sse": "https://glama.ai/mcp/instances/t27so815yb/sse"
       },
-      "id": "a5pjv7m4x2",
+      "id": "t27so815yb",
+      "mcpServer": {
+        "attributes": ["author:official", "hosting:remote-capable"],
+        "description": "This server enables AI systems to integrate with Tavily's search and data extraction tools, providing real-time web information access and domain-specific searches.",
+        "environmentVariablesJsonSchema": {
+          "properties": {
+            "TAVILY_API_KEY": {
+              "description": "Your Tavily API key obtained from app.tavily.com/home",
+              "type": "string"
+            }
+          },
+          "type": "object",
+          "required": ["TAVILY_API_KEY"]
+        },
+        "id": "jog9una8ox",
+        "name": "Tavily MCP Server",
+        "namespace": "tavily-ai",
+        "repository": {
+          "url": "https://github.com/tavily-ai/tavily-mcp"
+        },
+        "slug": "tavily-mcp",
+        "spdxLicense": {
+          "name": "MIT License",
+          "url": "https://spdx.org/licenses/MIT.json"
+        },
+        "tools": [
+          {
+            "description": "A powerful web content extraction tool that retrieves and processes raw content from specified URLs, ideal for data collection, content analysis, and research tasks.",
+            "name": "tavily-extract",
+            "inputSchema": {
+              "properties": {
+                "extract_depth": {
+                  "default": "basic",
+                  "description": "Depth of extraction - 'basic' or 'advanced', if usrls are linkedin use 'advanced' or if explicitly told to use advanced",
+                  "enum": ["basic", "advanced"],
+                  "type": "string"
+                },
+                "include_images": {
+                  "default": false,
+                  "description": "Include a list of images extracted from the urls in the response",
+                  "type": "boolean"
+                },
+                "urls": {
+                  "description": "List of URLs to extract content from",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": ["urls"],
+              "type": "object"
+            }
+          },
+          {
+            "description": "A powerful web search tool that provides comprehensive, real-time results using Tavily's AI search engine. Returns relevant web content with customizable parameters for result count, content type, and domain filtering. Ideal for gathering current information, news, and detailed web content analysis.",
+            "name": "tavily-search",
+            "inputSchema": {
+              "properties": {
+                "days": {
+                  "default": 3,
+                  "description": "The number of days back from the current date to include in the search results. This specifies the time frame of data to be retrieved. Please note that this feature is only available when using the 'news' search topic",
+                  "type": "number"
+                },
+                "exclude_domains": {
+                  "default": [],
+                  "description": "List of domains to specifically exclude, if the user asks to exclude a domain set this to the domain of the site",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "include_domains": {
+                  "default": [],
+                  "description": "A list of domains to specifically include in the search results, if the user asks to search on specific sites set this to the domain of the site",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "include_image_descriptions": {
+                  "default": false,
+                  "description": "Include a list of query-related images and their descriptions in the response",
+                  "type": "boolean"
+                },
+                "include_images": {
+                  "default": false,
+                  "description": "Include a list of query-related images in the response",
+                  "type": "boolean"
+                },
+                "include_raw_content": {
+                  "default": false,
+                  "description": "Include the cleaned and parsed HTML content of each search result",
+                  "type": "boolean"
+                },
+                "max_results": {
+                  "default": 10,
+                  "description": "The maximum number of search results to return",
+                  "maximum": 20,
+                  "minimum": 5,
+                  "type": "number"
+                },
+                "query": {
+                  "description": "Search query",
+                  "type": "string"
+                },
+                "search_depth": {
+                  "default": "basic",
+                  "description": "The depth of the search. It can be 'basic' or 'advanced'",
+                  "enum": ["basic", "advanced"],
+                  "type": "string"
+                },
+                "time_range": {
+                  "description": "The time range back from the current date to include in the search results. This feature is available for both 'general' and 'news' search topics",
+                  "enum": ["day", "week", "month", "year", "d", "w", "m", "y"],
+                  "type": "string"
+                },
+                "topic": {
+                  "default": "general",
+                  "description": "The category of the search. This will determine which of our agents will be used for the search",
+                  "enum": ["general", "news"],
+                  "type": "string"
+                }
+              },
+              "required": ["query"],
+              "type": "object"
+            }
+          }
+        ],
+        "url": "https://glama.ai/mcp/servers/jog9una8ox"
+      }
+    },
+    {
+      "endpoints": {
+        "sse": "https://glama.ai/mcp/instances/9fx1fd4fh8/sse"
+      },
+      "id": "9fx1fd4fh8",
+      "mcpServer": {
+        "attributes": ["hosting:remote-capable"],
+        "description": "Search and retrieve news articles and trending keywords from Google News and Google Trends. Summarize articles and extract keywords using optional NLP and LLM Sampling to get concise insights.",
+        "environmentVariablesJsonSchema": {
+          "properties": {},
+          "type": "object",
+          "required": []
+        },
+        "id": "tdomc61zty",
+        "name": "google-news-trends-mcp",
+        "namespace": "jmanek",
+        "repository": {
+          "url": "https://github.com/jmanek/google-news-trends-mcp"
+        },
+        "slug": "google-news-trends-mcp",
+        "spdxLicense": {
+          "name": "MIT License",
+          "url": "https://spdx.org/licenses/MIT.json"
+        },
+        "tools": [
+          {
+            "description": "\n    Find articles by keyword using Google News.\n    ",
+            "name": "get_news_by_keyword",
+            "inputSchema": {
+              "properties": {
+                "full_data": {
+                  "default": false,
+                  "description": "Return full data for each article. If False a summary should be created by setting the summarize flag",
+                  "title": "Full Data",
+                  "type": "boolean"
+                },
+                "keyword": {
+                  "description": "Search term to find articles.",
+                  "title": "Keyword",
+                  "type": "string"
+                },
+                "max_results": {
+                  "default": 10,
+                  "description": "Maximum number of results to return.",
+                  "minimum": 1,
+                  "title": "Max Results",
+                  "type": "integer"
+                },
+                "period": {
+                  "default": 7,
+                  "description": "Number of days to look back for articles.",
+                  "minimum": 1,
+                  "title": "Period",
+                  "type": "integer"
+                },
+                "summarize": {
+                  "default": true,
+                  "description": "Generate a summary of the article, will first try LLM Sampling but if unavailable will use nlp",
+                  "title": "Summarize",
+                  "type": "boolean"
+                }
+              },
+              "required": ["keyword"],
+              "type": "object"
+            }
+          },
+          {
+            "description": "Find articles by location using Google News.\n    ",
+            "name": "get_news_by_location",
+            "inputSchema": {
+              "properties": {
+                "full_data": {
+                  "default": false,
+                  "description": "Return full data for each article. If False a summary should be created by setting the summarize flag",
+                  "title": "Full Data",
+                  "type": "boolean"
+                },
+                "location": {
+                  "description": "Name of city/state/country.",
+                  "title": "Location",
+                  "type": "string"
+                },
+                "max_results": {
+                  "default": 10,
+                  "description": "Maximum number of results to return.",
+                  "minimum": 1,
+                  "title": "Max Results",
+                  "type": "integer"
+                },
+                "period": {
+                  "default": 7,
+                  "description": "Number of days to look back for articles.",
+                  "minimum": 1,
+                  "title": "Period",
+                  "type": "integer"
+                },
+                "summarize": {
+                  "default": true,
+                  "description": "Generate a summary of the article, will first try LLM Sampling but if unavailable will use nlp",
+                  "title": "Summarize",
+                  "type": "boolean"
+                }
+              },
+              "required": ["location"],
+              "type": "object"
+            }
+          },
+          {
+            "description": "Find articles by topic using Google News.\n    topic is one of\n    WORLD, NATION, BUSINESS, TECHNOLOGY, ENTERTAINMENT, SPORTS, SCIENCE, HEALTH,\n    POLITICS, CELEBRITIES, TV, MUSIC, MOVIES, THEATER, SOCCER, CYCLING, MOTOR SPORTS,\n    TENNIS, COMBAT SPORTS, BASKETBALL, BASEBALL, FOOTBALL, SPORTS BETTING, WATER SPORTS,\n    HOCKEY, GOLF, CRICKET, RUGBY, ECONOMY, PERSONAL FINANCE, FINANCE, DIGITAL CURRENCIES,\n    MOBILE, ENERGY, GAMING, INTERNET SECURITY, GADGETS, VIRTUAL REALITY, ROBOTICS, NUTRITION,\n    PUBLIC HEALTH, MENTAL HEALTH, MEDICINE, SPACE, WILDLIFE, ENVIRONMENT, NEUROSCIENCE, PHYSICS,\n    GEOLOGY, PALEONTOLOGY, SOCIAL SCIENCES, EDUCATION, JOBS, ONLINE EDUCATION, HIGHER EDUCATION,\n    VEHICLES, ARTS-DESIGN, BEAUTY, FOOD, TRAVEL, SHOPPING, HOME, OUTDOORS, FASHION.\n    ",
+            "name": "get_news_by_topic",
+            "inputSchema": {
+              "properties": {
+                "full_data": {
+                  "default": false,
+                  "description": "Return full data for each article. If False a summary should be created by setting the summarize flag",
+                  "title": "Full Data",
+                  "type": "boolean"
+                },
+                "max_results": {
+                  "default": 10,
+                  "description": "Maximum number of results to return.",
+                  "minimum": 1,
+                  "title": "Max Results",
+                  "type": "integer"
+                },
+                "period": {
+                  "default": 7,
+                  "description": "Number of days to look back for articles.",
+                  "minimum": 1,
+                  "title": "Period",
+                  "type": "integer"
+                },
+                "summarize": {
+                  "default": true,
+                  "description": "Generate a summary of the article, will first try LLM Sampling but if unavailable will use nlp",
+                  "title": "Summarize",
+                  "type": "boolean"
+                },
+                "topic": {
+                  "description": "Topic to search for articles.",
+                  "title": "Topic",
+                  "type": "string"
+                }
+              },
+              "required": ["topic"],
+              "type": "object"
+            }
+          },
+          {
+            "description": "\n    Get top news stories from Google News.\n    ",
+            "name": "get_top_news",
+            "inputSchema": {
+              "properties": {
+                "full_data": {
+                  "default": false,
+                  "description": "Return full data for each article. If False a summary should be created by setting the summarize flag",
+                  "title": "Full Data",
+                  "type": "boolean"
+                },
+                "max_results": {
+                  "default": 10,
+                  "description": "Maximum number of results to return.",
+                  "minimum": 1,
+                  "title": "Max Results",
+                  "type": "integer"
+                },
+                "period": {
+                  "default": 3,
+                  "description": "Number of days to look back for top articles.",
+                  "minimum": 1,
+                  "title": "Period",
+                  "type": "integer"
+                },
+                "summarize": {
+                  "default": true,
+                  "description": "Generate a summary of the article, will first try LLM Sampling but if unavailable will use nlp",
+                  "title": "Summarize",
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            }
+          },
+          {
+            "description": "\n    Returns google trends for a specific geo location.\n    ",
+            "name": "get_trending_terms",
+            "inputSchema": {
+              "properties": {
+                "full_data": {
+                  "default": false,
+                  "description": "Return full data for each trend. Should be False for most use cases.",
+                  "title": "Full Data",
+                  "type": "boolean"
+                },
+                "geo": {
+                  "default": "US",
+                  "description": "Country code, e.g. 'US', 'GB', 'IN', etc.",
+                  "title": "Geo",
+                  "type": "string"
+                },
+                "max_results": {
+                  "default": 100,
+                  "description": "Maximum number of results to return.",
+                  "minimum": 1,
+                  "title": "Max Results",
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "url": "https://glama.ai/mcp/servers/tdomc61zty"
+      }
+    },
+    {
+      "endpoints": {
+        "sse": "https://glama.ai/mcp/instances/d7iag3xxeo/sse?token=a8f35187-4cb0-4e8d-b9ac-5de5df7f7ddd"
+      },
+      "id": "s0o5zud2rp",
       "mcpServer": {
         "attributes": [],
         "description": "A Model Context Protocol (MCP) server for advanced code analysis and editing with semantic search capabilities, enabling AI assistants to perform complex code operations through a standardized interface.",
