@@ -1,8 +1,6 @@
 import { findBestMCPs } from "@/lib/glama";
-import { updateSession } from "@/lib/session";
-import { SESSION_ID } from "../../pages/api/chat";
 import glamaResponse from "../mocks/instances.json";
-import { GlamaResponse } from "../glama-types";
+import { GlamaResponse, Instance } from "../glama-types";
 import { z } from "zod";
 
 const mcpSummary = (glamaResponse as unknown as GlamaResponse).instances.map(
@@ -28,19 +26,22 @@ export const recommend_mcp_tool = {
   }),
   execute: async ({ query }: { query: string }) => {
     console.log(`Recommending MCPs for query: ${query}`);
-    const recommendedMCPs = await findBestMCPs(query);
+    const recommendedMCPs: Instance[] = await findBestMCPs(query);
 
     if (recommendedMCPs.length > 0) {
-      updateSession(SESSION_ID, {
+      return {
         recommendedMCPs,
-      });
-      return `The following MCP Servers are enabled: \`${recommendedMCPs
-        .map((instance) => instance.mcpServer.name)
-        .join(", ")}\` which supports: ${recommendedMCPs
-        .flatMap((instance) => instance.mcpServer.tools.map((t) => t.name))
-        .join(", ")}. Please repeat the query to use the selected MCPs.`;
+        message: `The following MCP Servers are enabled: \`${recommendedMCPs
+          .map((instance) => instance.mcpServer.name)
+          .join(", ")}\` which supports: ${recommendedMCPs
+          .flatMap((instance) => instance.mcpServer.tools.map((t) => t.name))
+          .join(", ")}. Please repeat the query to use the selected MCPs.`,
+      };
     }
 
-    return "I couldn't find a suitable MCP server for your request.";
+    return {
+      recommendedMCPs: [],
+      message: "I couldn't find a suitable MCP server for your request.",
+    };
   },
 };

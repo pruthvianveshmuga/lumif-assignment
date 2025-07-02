@@ -1,16 +1,17 @@
 import { CoreMessage, experimental_createMCPClient, streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { getSession, SessionState } from "../../lib/session";
+import { getSession, SessionState, updateSession } from "../../lib/session";
 import { recommend_mcp_tool } from "@/lib/tools/recommend_mcp_tool";
 import { Instance } from "@/lib/glama-types";
+import { cookies, headers } from "next/headers";
+import { parse, serialize } from "cookie";
 
 export const runtime = "edge";
 
-export const SESSION_ID = "user-session-poc"; // Simple session identifier for POC
-
 const handleUserMessage = async (
   messages: CoreMessage[],
-  userSession: SessionState
+  userSession: SessionState,
+  sessionId: string
 ) => {
   let tools = { recommend_mcp_tool };
   if (userSession?.recommendedMCPs) {
@@ -19,7 +20,7 @@ const handleUserMessage = async (
         const mcpClient = await experimental_createMCPClient({
           transport: {
             type: "sse",
-            url: instance.endpoints.sse,
+            url: (instance as Instance).endpoints.sse,
           },
         });
         return await mcpClient.tools();
@@ -31,16 +32,57 @@ const handleUserMessage = async (
     model: openai("gpt-4.1-nano"),
     messages,
     tools,
+    onFinish: async ({ toolResults }) => {
+      if (!toolResults) return;
+
+      const mcpRecommendationResult = toolResults.find(
+        (r) => r.toolName === "recommend_mcp_tool"
+      );
+
+      if (mcpRecommendationResult) {
+        const result = mcpRecommendationResult.result as {
+          recommendedMCPs: Instance[];
+          message: string;
+        };
+        const recommendedMCPs = result.recommendedMCPs;
+
+        if (recommendedMCPs && recommendedMCPs.length > 0) {
+          console.log("Updating session with recommended MCPs");
+          updateSession(sessionId, {
+            recommendedMCPs,
+          });
+        }
+      }
+    },
   });
 };
 
 export default async function POST(req: Request) {
   try {
     const { messages }: { messages: CoreMessage[] } = await req.json();
-    const userSession = getSession(SESSION_ID);
+    const cookies = parse(req.headers.get("cookie") || "");
+    let sessionId = cookies.sessionId;
+    let setCookie = false;
+    if (!sessionId) {
+      sessionId = crypto.randomUUID();
+      setCookie = true;
+    }
 
-    const result = await handleUserMessage(messages, userSession!);
-    return result.toDataStreamResponse();
+    const userSession = getSession(sessionId);
+    const result = await handleUserMessage(messages, userSession, sessionId);
+    const response = result.toDataStreamResponse();
+
+    if (setCookie) {
+      const cookie = serialize("sessionId", sessionId, {
+        httpOnly: true, // Prevents JavaScript access
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/", // Cookie is valid throughout the site
+        maxAge: 60 * 60 * 24, // 1 day
+      });
+      response.headers.set("Set-Cookie", cookie);
+    }
+    return response;
   } catch (error) {
     console.error("An unexpected error occurred:", error);
     if (error instanceof Error && error.name === "TimeoutError") {
