@@ -8,39 +8,6 @@ export const runtime = "edge";
 
 export const SESSION_ID = "user-session-poc"; // Simple session identifier for POC
 
-async function handleMCPChat(
-  messages: CoreMessage[],
-  userSession: SessionState
-) {
-  const toolsSet = await Promise.all(
-    userSession.recommendedMCPs!.map(async (instance: Instance) => {
-      const mcpClient = await experimental_createMCPClient({
-        transport: {
-          type: "sse",
-          url: instance.endpoints.sse,
-        },
-      });
-      return await mcpClient.tools();
-    })
-  );
-
-  return streamText({
-    model: openai("gpt-4.1-nano"),
-    tools: { ...Object.assign({}, ...toolsSet) },
-    messages,
-  });
-}
-
-async function handleRecommendation(messages: CoreMessage[]) {
-  return streamText({
-    model: openai("gpt-4.1-nano"),
-    messages,
-    tools: {
-      recommend_mcp_tool,
-    },
-  });
-}
-
 const handleUserMessage = async (
   messages: CoreMessage[],
   userSession: SessionState

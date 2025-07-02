@@ -19,27 +19,32 @@ const mcpSummary = (glamaResponse as unknown as GlamaResponse).instances.map(
 
 export async function selectBestMcps(
   query: string,
-  instances: Instance[],
-  limit: number = 1
+  instances: Instance[]
 ): Promise<Instance[]> {
   const { object } = await generateObject({
     model: openai("gpt-4o"),
     schema: z.object({
-      bestMCP: z.object({
-        namespace: z.string(),
-        slug: z.string(),
-      }),
+      bestMCPs: z.array(
+        z.object({
+          namespace: z.string(),
+          slug: z.string(),
+        })
+      ),
     }),
-    prompt: `Return one best MCP servers for the query: ${query}
+    prompt: `Return relevant MCP servers for the query: ${query}
     from the following list of MCP servers:
     ${JSON.stringify(mcpSummary)}
     `,
   });
-  const bestMCP = object.bestMCP;
-  return instances.filter((instance) => {
+  const bestMCPs = object.bestMCPs;
+  const bestInstances = instances.filter((instance) => {
     return (
-      instance.mcpServer.namespace === bestMCP.namespace &&
-      instance.mcpServer.slug === bestMCP.slug
+      bestMCPs
+        .map((mcp) => mcp.namespace)
+        .includes(instance.mcpServer.namespace) &&
+      bestMCPs.map((mcp) => mcp.slug).includes(instance.mcpServer.slug)
     );
   });
+  debugger;
+  return bestInstances;
 }

@@ -38,7 +38,7 @@ export const recommend_mcp_tool = {
         .map((instance) => instance.mcpServer.name)
         .join(", ")}\` which supports: ${recommendedMCPs
         .flatMap((instance) => instance.mcpServer.tools.map((t) => t.name))
-        .join(", ")}. Please repeat the query to use the selected MCP.`;
+        .join(", ")}. Please repeat the query to use the selected MCPs.`;
     }
 
     return "I couldn't find a suitable MCP server for your request.";
