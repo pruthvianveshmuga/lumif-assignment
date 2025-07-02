@@ -1,4 +1,19 @@
-- Maintain a user session store in the backend to save previous messages of the user. Send only the latest AI message to the frontend instead of all messages. Similarly implement a messsages state in the frontend and append the new messages in that state. Only send the latest user message from the frontend when the user sends a message instead of all messages.
-- User session is currently a local map and the key is hardcoded (to limit scope to POC). Instead track the user session id with cookies.
-- Handle Errors gracefully in UI for status codes 5xx and 4xx
-- API call "https://glama.ai/api/mcp/v1/instances" is currently not returning the token required for see connection. So, mocked a valid response in `lib/mocks/instances.json`
+# Future Improvements
+
+This document outlines potential improvements for the application.
+
+## Session and Message Handling
+
+### Backend
+
+- Implement a user session store to persist conversation history for each user.
+- Optimize message delivery by sending only the latest AI-generated message to the frontend, rather than the complete message history.
+
+### Frontend
+
+- Manage conversation history using a local state (e.g., a `messages` array).
+- When a user sends a new message, transmit only that message to the backend to reduce payload size.
+
+## External API Dependencies
+
+- The response from the `https://glama.ai/api/mcp/v1/instances` endpoint is currently mocked in `lib/mocks/instances.json`. This is because the live API is not providing the required token for the SSE connection. This mock should be removed once the API is functional.
