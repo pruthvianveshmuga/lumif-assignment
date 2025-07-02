@@ -10,10 +10,7 @@ export function getSession(sessionId: string): SessionState | undefined {
   return sessionStore.get(sessionId);
 }
 
-export function updateSession(
-  sessionId: string,
-  data: Partial<SessionState>
-): void {
+export function updateSession(sessionId: string, data: SessionState): void {
   const existingSession = sessionStore.get(sessionId) || {};
   sessionStore.set(sessionId, { ...existingSession, ...data });
 }

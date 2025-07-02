@@ -41,15 +41,37 @@ async function handleRecommendation(messages: CoreMessage[]) {
   });
 }
 
+const handleUserMessage = async (
+  messages: CoreMessage[],
+  userSession: SessionState
+) => {
+  let tools = { recommend_mcp_tool };
+  if (userSession?.recommendedMCPs) {
+    const toolsSet = await Promise.all(
+      userSession.recommendedMCPs!.map(async (instance: Instance) => {
+        const mcpClient = await experimental_createMCPClient({
+          transport: {
+            type: "sse",
+            url: instance.endpoints.sse,
+          },
+        });
+        return await mcpClient.tools();
+      })
+    );
+    tools = Object.assign(tools, ...toolsSet);
+  }
+  return streamText({
+    model: openai("gpt-4.1-nano"),
+    messages,
+    tools,
+  });
+};
+
+// TODO: add tool error handling
 export default async function POST(req: Request) {
   const { messages }: { messages: CoreMessage[] } = await req.json();
   const userSession = getSession(SESSION_ID);
 
-  if (userSession?.recommendedMCPs) {
-    const result = await handleMCPChat(messages, userSession!);
-    return result.toDataStreamResponse();
-  }
-
-  const result = await handleRecommendation(messages);
+  const result = await handleUserMessage(messages, userSession!);
   return result.toDataStreamResponse();
 }
