@@ -1,20 +1,19 @@
 import { CoreMessage, experimental_createMCPClient, streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { getSession, SessionState, updateSession } from "../../lib/session";
-import { recommend_mcp_tool } from "@/lib/tools/recommend_mcp_tool";
+import { getSession, SessionState } from "../../lib/session";
 import { Instance } from "@/lib/glama-types";
-import { cookies, headers } from "next/headers";
 import { parse, serialize } from "cookie";
+import { recommend_mcp_tool } from "@/lib/tools/recommend_mcp_tool";
 
 export const runtime = "edge";
 
 const handleUserMessage = async (
   messages: CoreMessage[],
-  userSession: SessionState,
   sessionId: string
 ) => {
-  let tools = { recommend_mcp_tool };
-  if (userSession?.recommendedMCPs) {
+  const userSession = getSession(sessionId);
+  let tools: any = { recommend_mcp_tool: recommend_mcp_tool(sessionId) };
+  if (userSession.recommendedMCPs) {
     const toolsSet = await Promise.all(
       userSession.recommendedMCPs!.map(async (instance: Instance) => {
         const mcpClient = await experimental_createMCPClient({
@@ -32,28 +31,6 @@ const handleUserMessage = async (
     model: openai("gpt-4.1-nano"),
     messages,
     tools,
-    onFinish: async ({ toolResults }) => {
-      if (!toolResults) return;
-
-      const mcpRecommendationResult = toolResults.find(
-        (r) => r.toolName === "recommend_mcp_tool"
-      );
-
-      if (mcpRecommendationResult) {
-        const result = mcpRecommendationResult.result as {
-          recommendedMCPs: Instance[];
-          message: string;
-        };
-        const recommendedMCPs = result.recommendedMCPs;
-
-        if (recommendedMCPs && recommendedMCPs.length > 0) {
-          console.log("Updating session with recommended MCPs");
-          updateSession(sessionId, {
-            recommendedMCPs,
-          });
-        }
-      }
-    },
   });
 };
 
@@ -67,9 +44,7 @@ export default async function POST(req: Request) {
       sessionId = crypto.randomUUID();
       setCookie = true;
     }
-
-    const userSession = getSession(sessionId);
-    const result = await handleUserMessage(messages, userSession, sessionId);
+    const result = await handleUserMessage(messages, sessionId);
     const response = result.toDataStreamResponse();
 
     if (setCookie) {
